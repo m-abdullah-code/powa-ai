@@ -12,6 +12,7 @@ import type {
   ChatMessage,
 } from "../interface/chats";
 import Specialist from "../components/Specialist";
+import { generateUUID } from "../utils/uuid";
 
 interface SpecialistData {
   image: string;
@@ -88,7 +89,7 @@ const Chats = () => {
   // Always generate new sessionId on mount if not already set (e.g. from history click)
   useEffect(() => {
     if (!currentSessionId) {
-      const newSessionId = crypto.randomUUID();
+      const newSessionId = generateUUID();
       dispatch(setCurrentSessionId(newSessionId));
     }
   }, []); // Only run once on mount
