@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { IoChatbubbleOutline, IoAdd } from 'react-icons/io5';
+import { useEffect, useState, useRef } from 'react';
+import { IoChatbubbleOutline, IoAdd, IoPersonCircleOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import {
@@ -8,6 +8,7 @@ import {
     setCurrentSessionId,
     setLoadingHistory
 } from '../store/slices/chatSlice';
+// import { logout } from '../store/slices/authSlice';
 import { getChats } from '../api/chats';
 import type { ConversationsResponse } from '../interface/chats';
 
@@ -19,6 +20,25 @@ interface SidebarProps {
 function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     const dispatch = useDispatch();
     const { history, currentSessionId, loadingHistory } = useSelector((state: RootState) => state.chat);
+    const { user } = useSelector((state: RootState) => state.auth);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // const handleLogout = () => {
+    //     dispatch(logout());
+    //     // You might want to navigate to login page here if not handled by a protected route wrapper
+    // };
 
     const fetchHistoryList = async () => {
         dispatch(setLoadingHistory(true));
@@ -71,11 +91,13 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     return (
         <>
             <aside className={`
-                    fixed z-50 top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col
+                    fixed z-50 top-0 left-0 h-screen lg:h-[90vh] w-64 bg-white border-r border-gray-200 flex flex-col
                     transform transition-transform duration-300 ease-in-out
                     ${isOpen ? "translate-x-0" : "-translate-x-full"} 
                     lg:translate-x-0 lg:static lg:block
-                `}>
+                `}
+                style={{ display: "flex" }}
+            >
 
                 {/* New Chat Button */}
                 <div className="p-4 pt-24 lg:pt-4">
@@ -112,6 +134,43 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                             </button>
                         ))
                     )}
+                </div>
+
+                {/* Profile Section */}
+                <div className="p-4 border-t border-gray-100 relative" ref={dropdownRef}>
+                    {isProfileOpen && (
+                        <div className="absolute bottom-full left-4 right-4 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <div className="p-4 border-b border-gray-50">
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Signed in as</p>
+                                <p className="text-sm font-semibold text-gray-800 truncate">{user?.email}</p>
+                            </div>
+                            {/* <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                            >
+                                <IoLogOutOutline size={18} />
+                                <span className="font-medium">Sign out</span>
+                            </button> */}
+                        </div>
+                    )}
+
+                    <button
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border ${isProfileOpen ? 'bg-gray-50 border-gray-200' : 'border-transparent hover:bg-gray-50'
+                            }`}
+                    >
+                        <div className="flex-shrink-0">
+                            <IoPersonCircleOutline size={32} className="text-gray-400" />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                            <p className="text-sm font-bold text-gray-800 truncate">
+                                {user?.username || "Guest User"}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                                View Profile
+                            </p>
+                        </div>
+                    </button>
                 </div>
             </aside>
 
