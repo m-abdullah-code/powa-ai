@@ -11,6 +11,7 @@ import {
 // import { logout } from '../store/slices/authSlice';
 import { getChats } from '../api/chats';
 import type { ConversationsResponse } from '../interface/chats';
+import { generateUUID } from '../utils/uuid';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -79,7 +80,7 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     }, []);
 
     const handleNewSession = () => {
-        dispatch(setCurrentSessionId(crypto.randomUUID()));
+        dispatch(setCurrentSessionId(generateUUID()));
         setIsOpen(false);
     };
 
