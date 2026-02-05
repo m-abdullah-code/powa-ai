@@ -168,7 +168,7 @@ const Chats = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 custom-scrollbar scroll-smooth">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700 p-4">
-              <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2.5rem] bg-linear-to-br from-green-600 to-indigo-700 shadow-2xl shadow-green-200 flex items-center justify-center text-white mb-6 md:mb-8 group transition-transform hover:scale-105">
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2.5rem] bg-linear-to-br from-green-600 to-green-700 shadow-2xl shadow-green-200 flex items-center justify-center text-white mb-6 md:mb-8 group transition-transform hover:scale-105">
                 <IoSend size={30} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform md:hidden" />
                 <IoSend size={40} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform hidden md:block" />
               </div>
@@ -195,7 +195,7 @@ const Chats = () => {
                   >
                     {hasSpecialists ? (
                       <div className="space-y-4">
-                        {intro && <p className="font-medium">{intro}</p>}
+                        {intro && <p className="font-medium">{intro.replace("[[REFERRAL_READY]]", "").trim()}</p>}
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {specialists.map((spec, idx) => (
@@ -203,13 +203,13 @@ const Chats = () => {
                           ))}
                         </div>
 
-                        {outro && <p className="font-medium">{outro}</p>}
+                        {outro && <p className="font-medium">{outro.replace("[[REFERRAL_READY]]", "").trim()}</p>}
 
-                        {(outro.toLowerCase().includes("referral letter") || outro.toLowerCase().includes("download pdf") || msg.content.toLowerCase().includes("referral letter")) && (
+                        {msg.content.includes("[[REFERRAL_READY]]") && (
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <button
                               onClick={handleDownloadPDF}
-                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn"
+                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
                             >
                               <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
                               Download Referral Letter
@@ -219,12 +219,12 @@ const Chats = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <p className="font-medium whitespace-pre-wrap">{msg.content}</p>
-                        {(msg.content.toLowerCase().includes("referral letter") || msg.content.toLowerCase().includes("download pdf")) && (
+                        <p className="font-medium whitespace-pre-wrap">{msg.content.replace("[[REFERRAL_READY]]", "").trim()}</p>
+                        {msg.content.includes("[[REFERRAL_READY]]") && (
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <button
                               onClick={handleDownloadPDF}
-                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn"
+                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
                             >
                               <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
                               Download Referral Letter
