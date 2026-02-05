@@ -7,7 +7,7 @@ import {
   updateOrAddHistory,
   setCurrentSessionId
 } from "../store/slices/chatSlice";
-import { chats, pdfGenerate } from "../api/chats";
+import { chats, generateReferral } from "../api/chats";
 import type {
   ChatMessage,
 } from "../interface/chats";
@@ -93,20 +93,23 @@ const Chats = () => {
     }
   }, []); // Only run once on mount
 
-  // 📂 PDF GENERATION & DOWNLOAD
-  const handleDownloadPDF = async () => {
+  // 📂 REFERRAL GENERATION & DOWNLOAD
+  const handleDownloadReferral = async () => {
     if (!currentSessionId) return;
     try {
-      const response = await pdfGenerate(currentSessionId);
+      const response = await generateReferral(currentSessionId);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Referral_${currentSessionId}.pdf`);
+      link.setAttribute("download", `Referral_${currentSessionId}.docx`);
       document.body.appendChild(link);
       link.click();
-      link.parentNode?.removeChild(link);
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("PDF generation failed", err);
+      console.error("Referral download failed", err);
     }
   };
 
@@ -208,7 +211,7 @@ const Chats = () => {
                         {msg.content.includes("[[REFERRAL_READY]]") && (
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <button
-                              onClick={handleDownloadPDF}
+                              onClick={handleDownloadReferral}
                               className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
                             >
                               <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
@@ -219,11 +222,11 @@ const Chats = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <p className="font-medium whitespace-pre-wrap">{msg.content.replace("[[REFERRAL_READY]]", "").trim()}</p>
+                        <p className="font-medium whitespace-pre-wrap">{msg.content.replace("[[REFERRAL_READY]]", "").replace("PDF", "Word").trim()}</p>
                         {msg.content.includes("[[REFERRAL_READY]]") && (
                           <div className="mt-4 pt-4 border-t border-gray-100">
                             <button
-                              onClick={handleDownloadPDF}
+                              onClick={handleDownloadReferral}
                               className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
                             >
                               <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
