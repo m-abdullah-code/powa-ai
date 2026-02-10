@@ -16,6 +16,10 @@ export const generateReferral = async (sessionId: string) => {
 };
 
 // Upload medical report 
-export const uploadFile = async (sessionId: string) => {
-    return await api.post(`/upload-medical-report?session_id=${sessionId}`, {}, { responseType: 'blob' });
+export const uploadFile = async (sessionId: string, data: FormData) => {
+    return await api.post(`/upload-medical-report?session_id=${sessionId}`, data, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
 };

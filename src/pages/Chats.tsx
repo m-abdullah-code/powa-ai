@@ -7,7 +7,7 @@ import {
   updateOrAddHistory,
   setCurrentSessionId
 } from "../store/slices/chatSlice";
-import { chats, generateReferral } from "../api/chats";
+import { chats, generateReferral, uploadFile } from "../api/chats";
 import type {
   ChatMessage,
 } from "../interface/chats";
@@ -75,6 +75,8 @@ const Chats = () => {
 
   const [input, setInput] = useState("");
   const [loadingChat, setLoadingChat] = useState(false);
+  const [isUploadEnabled, setIsUploadEnabled] = useState(false);
+  const [showReferralButton, setShowReferralButton] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const messages = allSessions[currentSessionId] || [];
@@ -92,10 +94,11 @@ const Chats = () => {
     if (!currentSessionId) {
       const newSessionId = generateUUID();
       dispatch(setCurrentSessionId(newSessionId));
+      setShowReferralButton(false);
     }
   }, []); // Only run once on mount
 
-  // 📂 REFERRAL GENERATION & DOWNLOAD
+  // REFERRAL GENERATION & DOWNLOAD
   const handleDownloadReferral = async () => {
     if (!currentSessionId) return;
     try {
@@ -115,6 +118,57 @@ const Chats = () => {
     }
   };
 
+  // Check if upload should be enabled
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === "assistant" && lastMessage.content.includes("Please upload the patient's medical history")) {
+        setIsUploadEnabled(true);
+      } else {
+        setIsUploadEnabled(false);
+      }
+    } else {
+      setIsUploadEnabled(false);
+    }
+  }, [messages]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !currentSessionId) return;
+
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setLoadingChat(true);
+      await uploadFile(currentSessionId, formData);
+
+      // Add file upload message to chat history
+      const fileMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: `Uploaded: ${file.name}`,
+        created_at: new Date().toISOString(),
+      };
+      dispatch(addMessage({ sessionId: currentSessionId, message: fileMessage }));
+
+      // Show referral button immediately after upload
+      setShowReferralButton(true);
+
+      // setInput("File uploaded successfully.");
+
+      // Reset file input
+      e.target.value = "";
+
+      setIsUploadEnabled(false); // Disable after upload?
+
+    } catch (err) {
+      console.error("File upload failed", err);
+    } finally {
+      setLoadingChat(false);
+    }
+  };
+
   // 🟢 SEND MESSAGE
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -131,6 +185,7 @@ const Chats = () => {
     // Add user message to Redux
     dispatch(addMessage({ sessionId, message: tempUserMessage }));
     setInput("");
+    setShowReferralButton(false);
     setLoadingChat(true);
 
     try {
@@ -209,33 +264,10 @@ const Chats = () => {
                         </div>
 
                         {outro && <p className="font-medium">{outro.replace("[[REFERRAL_READY]]", "").trim()}</p>}
-
-                        {msg.content.includes("[[REFERRAL_READY]]") && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <button
-                              onClick={handleDownloadReferral}
-                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
-                            >
-                              <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
-                              Download Referral Letter
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="space-y-4">
                         <p className="font-medium whitespace-pre-wrap">{msg.content.replace("[[REFERRAL_READY]]", "").replace("PDF", "Word").trim()}</p>
-                        {msg.content.includes("[[REFERRAL_READY]]") && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <button
-                              onClick={handleDownloadReferral}
-                              className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
-                            >
-                              <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
-                              Download Referral Letter
-                            </button>
-                          </div>
-                        )}
                       </div>
                     )}
                     <div className={`mt-2 text-[10px] font-bold uppercase tracking-widest opacity-80 ${msg.role === "user" ? "text-right" : ""}`}>
@@ -257,6 +289,24 @@ const Chats = () => {
               </div>
             </div>
           )}
+          {showReferralButton && (
+            <div className="flex justify-start animate-in slide-in-from-bottom-5 fade-in duration-500">
+              <div className="bg-gray-50 px-6 py-4 rounded-3xl rounded-tl-none border border-gray-100 shadow-sm space-y-4 max-w-[85%]">
+                <p className="text-gray-800 text-sm md:text-[15px] font-medium leading-relaxed">
+                  Your referral letter is ready for download.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={handleDownloadReferral}
+                    className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl transition-all shadow-lg shadow-green-200 text-sm font-bold group/btn cursor-pointer"
+                  >
+                    <IoDownloadOutline size={20} className="group-hover/btn:translate-y-0.5 transition-transform" />
+                    Download Referral Letter
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -267,8 +317,18 @@ const Chats = () => {
             className="relative flex items-center max-w-4xl mx-auto w-full group"
           >
 
-            <input type="file" className="hidden" id="file-upload" />
-            <label htmlFor="file-upload" className="absolute left-2 cursor-pointer">
+            <input
+              type="file"
+              className="hidden"
+              id="file-upload"
+              disabled={!isUploadEnabled}
+              onChange={handleFileUpload}
+              accept=".pdf,.doc,.docx"
+            />
+            <label
+              htmlFor="file-upload"
+              className={`absolute left-2 cursor-pointer ${!isUploadEnabled ? 'opacity-50 cursor-not-allowed' : 'hover:text-green-600'}`}
+            >
               <MdOutlineFileUpload size={25} className="text-gray-500" />
             </label>
             <input
