@@ -220,14 +220,14 @@ const Chats = () => {
   };
 
   return (
-    <div className="flex bg-white h-[calc(100vh-140px)] lg:h-[calc(100vh-120px)] rounded-3xl shadow-2xl shadow-green-50/50 border border-gray-100 overflow-hidden mt-6 lg:mt-2">
+    <div className="flex bg-white h-[calc(100vh-140px)] lg:h-[calc(100vh-118px)] rounded-3xl shadow-2xl shadow-green-50/50 border border-gray-100 overflow-hidden mt-6 lg:mt-2">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative bg-white">
+      <div className="flex-1 flex flex-col relative bg-white pb-4">
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 custom-scrollbar scroll-smooth">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700 p-4">
+            <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700 p-4 m-0">
               <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2.5rem] bg-linear-to-br from-green-600 to-green-700 shadow-2xl shadow-green-200 flex items-center justify-center text-white mb-6 md:mb-8 group transition-transform hover:scale-105">
                 <IoSend size={30} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform md:hidden" />
                 <IoSend size={40} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform hidden md:block" />
@@ -326,8 +326,12 @@ const Chats = () => {
               accept=".pdf,.doc,.docx"
             />
             <label
-              htmlFor="file-upload"
-              className={`absolute left-2 cursor-pointer ${!isUploadEnabled ? 'opacity-50 cursor-not-allowed' : 'hover:text-green-600'}`}
+              htmlFor={isUploadEnabled ? "file-upload" : undefined}
+              className={`absolute left-2 
+                ${isUploadEnabled
+                  ? "cursor-pointer hover:text-green-600"
+                  : "opacity-40 cursor-not-allowed pointer-events-none"}
+              `}
             >
               <MdOutlineFileUpload size={25} className="text-gray-500" />
             </label>
@@ -335,7 +339,7 @@ const Chats = () => {
               type="text"
               autoFocus
               placeholder="Ask MedAssist AI..."
-              className="w-full pl-10 pr-14 md:pr-16 py-2 md:py-5 bg-gray-50 border border-gray-200 rounded-2xl md:rounded-3xl focus:ring-4 focus:ring-green-100 focus:border-green-400 focus:bg-white outline-none transition-all placeholder:text-gray-400 font-semibold text-gray-700 shadow-sm text-sm md:text-base"
+              className="w-full pl-10 pr-14 md:pr-16 py-2 md:py-5 bg-gray-50 border border-gray-200 rounded-2xl md:rounded-3xl focus:ring-4 focus:ring-green-100 focus:border-green-400 focus:bg-white outline-none transition-all placeholder:text-gray-400 font-medium text-gray-800 shadow-sm text-sm md:text-base"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loadingChat}
@@ -343,7 +347,7 @@ const Chats = () => {
             <button
               type="submit"
               disabled={loadingChat || !input.trim()}
-              className="absolute right-2 p-2 md:p-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 text-white rounded-xl md:rounded-2xl transition-all shadow-xl shadow-green-200 active:scale-95 disabled:shadow-none"
+              className="absolute right-2 p-2 md:p-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 text-white rounded-xl md:rounded-2xl transition-all shadow-xl shadow-green-200 active:scale-95 disabled:shadow-none cursor-pointer disabled:cursor-not-allowed"
             >
               <IoSend size={18} className={`md:hidden ${loadingChat ? "animate-pulse" : ""}`} />
               <IoSend size={22} className={`hidden md:block ${loadingChat ? "animate-pulse" : ""}`} />

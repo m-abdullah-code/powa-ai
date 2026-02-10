@@ -7,7 +7,7 @@ interface NavbarProps {
 function Navbar({ onToggleSidebar }: NavbarProps) {
   return (
     <>
-      <div className="px-6 h-full border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md z-10">
+      <div className="px-6 h-full border-b border-gray-200 flex items-center justify-between bg-white z-10">
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
