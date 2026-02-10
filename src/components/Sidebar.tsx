@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { IoChatbubbleOutline, IoAdd, IoPersonCircleOutline } from 'react-icons/io5';
+import { IoChatbubbleOutline, IoAdd, IoPersonCircleOutline, IoLogOutOutline } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store/store';
 import {
     setHistory,
@@ -8,7 +9,7 @@ import {
     setCurrentSessionId,
     setLoadingHistory
 } from '../store/slices/chatSlice';
-// import { logout } from '../store/slices/authSlice';
+import { logout } from '../store/slices/authSlice';
 import { getChats } from '../api/chats';
 import type { ConversationsResponse } from '../interface/chats';
 import { generateUUID } from '../utils/uuid';
@@ -20,6 +21,7 @@ interface SidebarProps {
 
 function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { history, currentSessionId, loadingHistory } = useSelector((state: RootState) => state.chat);
     const { user } = useSelector((state: RootState) => state.auth);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -36,10 +38,11 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // const handleLogout = () => {
-    //     dispatch(logout());
-    //     // You might want to navigate to login page here if not handled by a protected route wrapper
-    // };
+    // Logout function
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate('/login');
+    };
 
     const fetchHistoryList = async () => {
         dispatch(setLoadingHistory(true));
@@ -145,22 +148,25 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                                 <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Signed in as</p>
                                 <p className="text-sm font-semibold text-gray-800 truncate">{user?.email}</p>
                             </div>
-                            {/* <button
+
+                            {/* Logout button */}
+                            <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                                className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
                             >
                                 <IoLogOutOutline size={18} />
-                                <span className="font-medium">Sign out</span>
-                            </button> */}
+                                <span className="font-medium">Logout</span>
+                            </button>
                         </div>
                     )}
 
+                    {/* Profile button */}
                     <button
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all border ${isProfileOpen ? 'bg-gray-50 border-gray-200' : 'border-transparent hover:bg-gray-50'
                             }`}
                     >
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                             <IoPersonCircleOutline size={32} className="text-gray-400" />
                         </div>
                         <div className="flex-1 min-w-0 text-left">

@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { AuthState, User } from "../../interface/auth/auth";
 
 const savedUser = localStorage.getItem("user");
-const savedToken = localStorage.getItem("token");
+const savedToken = localStorage.getItem("access_token");
 
 interface ExtendedAuthState extends AuthState {
   signupLoading: boolean;
@@ -45,7 +45,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       localStorage.setItem("user", JSON.stringify(action.payload.user));
-      localStorage.setItem("token", action.payload.token);
+      localStorage.setItem("access_token", action.payload.token);
     },
     loginFailure(state, action: PayloadAction<string | null>) {
       state.loginLoading = false;
@@ -57,6 +57,7 @@ const authSlice = createSlice({
       state.token = null;
       localStorage.removeItem("user");
       localStorage.removeItem("token");
+      localStorage.removeItem("access_token");
     },
   },
 });
