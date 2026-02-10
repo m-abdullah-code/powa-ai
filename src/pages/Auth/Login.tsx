@@ -5,6 +5,8 @@ import { RiLockPasswordFill } from 'react-icons/ri';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 import { login } from '../../api/auth';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../../store/slices/authSlice';
 
 function Login() {
   const [data, setData] = useState({
@@ -14,6 +16,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +37,7 @@ function Login() {
 
         if (response.data.user) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
+          dispatch(loginSuccess({ user: response.data.user, token: response.data.access_token }));
         }
 
         navigate('/chat');

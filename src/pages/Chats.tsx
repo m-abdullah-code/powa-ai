@@ -13,6 +13,7 @@ import type {
 } from "../interface/chats";
 import Specialist from "../components/Specialist";
 import { generateUUID } from "../utils/uuid";
+import { MdOutlineFileUpload } from "react-icons/md";
 
 interface SpecialistData {
   image: string;
@@ -192,7 +193,7 @@ const Chats = () => {
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} group animate-in slide-in-from-bottom-5 fade-in duration-500`}
                 >
                   <div
-                    className={`relative px-4 py-3 md:px-6 md:py-4 rounded-2xl md:rounded-3xl max-w-[95%] md:max-w-[85%] text-sm md:text-[15px] leading-relaxed shadow-sm transition-all border ${msg.role === "user"
+                    className={`relative px-4 py-1 md:px-6 md:py-2 rounded-xl md:rounded-2xl max-w-[95%] md:max-w-[85%] text-sm md:text-[15px] leading-relaxed shadow-sm transition-all border ${msg.role === "user"
                       ? "bg-green-600 text-white rounded-tr-none shadow-green-200 border-green-500"
                       : "bg-gray-50 text-gray-800 rounded-tl-none border-gray-100"
                       }`}
@@ -260,16 +261,21 @@ const Chats = () => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 md:p-8 bg-white/50 backdrop-blur-sm border-t border-gray-50">
+        <div className="p-4 md:p-8 pb-0 md:pb-0 bg-white/50 backdrop-blur-sm border-t border-gray-50">
           <form
             onSubmit={handleSend}
             className="relative flex items-center max-w-4xl mx-auto w-full group"
           >
+
+            <input type="file" className="hidden" id="file-upload" />
+            <label htmlFor="file-upload" className="absolute left-2 cursor-pointer">
+              <MdOutlineFileUpload size={25} className="text-gray-500" />
+            </label>
             <input
               type="text"
               autoFocus
               placeholder="Ask MedAssist AI..."
-              className="w-full pl-6 pr-14 md:pr-16 py-4 md:py-5 bg-gray-50 border border-gray-200 rounded-2xl md:rounded-3xl focus:ring-4 focus:ring-green-100 focus:border-green-400 focus:bg-white outline-none transition-all placeholder:text-gray-400 font-semibold text-gray-700 shadow-sm text-sm md:text-base"
+              className="w-full pl-10 pr-14 md:pr-16 py-2 md:py-5 bg-gray-50 border border-gray-200 rounded-2xl md:rounded-3xl focus:ring-4 focus:ring-green-100 focus:border-green-400 focus:bg-white outline-none transition-all placeholder:text-gray-400 font-semibold text-gray-700 shadow-sm text-sm md:text-base"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loadingChat}
@@ -277,15 +283,15 @@ const Chats = () => {
             <button
               type="submit"
               disabled={loadingChat || !input.trim()}
-              className="absolute right-2 p-3 md:p-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 text-white rounded-xl md:rounded-2xl transition-all shadow-xl shadow-green-200 active:scale-95 disabled:shadow-none"
+              className="absolute right-2 p-2 md:p-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 text-white rounded-xl md:rounded-2xl transition-all shadow-xl shadow-green-200 active:scale-95 disabled:shadow-none"
             >
               <IoSend size={18} className={`md:hidden ${loadingChat ? "animate-pulse" : ""}`} />
               <IoSend size={22} className={`hidden md:block ${loadingChat ? "animate-pulse" : ""}`} />
             </button>
           </form>
-          <div className="mt-3 md:mt-4 flex items-center justify-center gap-4">
+          {/* <div className="mt-3 md:mt-4 flex items-center justify-center gap-4">
             <span className="text-[9px] md:text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] md:tracking-[0.3em]">Confidential Medical AI</span>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
