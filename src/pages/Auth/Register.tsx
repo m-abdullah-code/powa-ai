@@ -47,7 +47,7 @@ function Register() {
         <div className="p-8">
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
-            <p className="text-gray-500">Join MedAssist Pro today</p>
+            <p className="text-gray-500">Join MediAssist Pro today</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
