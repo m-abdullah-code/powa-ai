@@ -225,16 +225,21 @@ const Chats = () => {
       <div className="flex-1 flex flex-col relative bg-white pb-4">
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 custom-scrollbar scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-8 scroll-smooth
+        [&::-webkit-scrollbar]:w-1.5
+        [&::-webkit-scrollbar-track]:bg-gray-100
+        [&::-webkit-scrollbar-thumb]:bg-gray-300
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        ">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in duration-700 p-4 m-0">
               <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2.5rem] bg-linear-to-br from-green-600 to-green-700 shadow-2xl shadow-green-200 flex items-center justify-center text-white mb-6 md:mb-8 group transition-transform hover:scale-105">
                 <IoSend size={30} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform md:hidden" />
                 <IoSend size={40} className="-rotate-45 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform hidden md:block" />
               </div>
-              <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">Your Medical Assistant</h3>
-              <p className="text-gray-500 max-w-sm text-xs md:text-sm font-medium leading-relaxed">
-                Connect with our AI specialized in medical analysis. Ask anything about symptoms, drugs, or health advice.
+              <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mb-3">Your Medical & Referral Assistant</h3>
+              <p className="text-gray-500 max-w-md text-xs md:text-sm font-medium leading-relaxed">
+                AI-powered medical assistant for symptom guidance, referral pathways, specialist information, and referral letter generation.
               </p>
             </div>
           ) : (
