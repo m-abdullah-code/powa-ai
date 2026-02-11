@@ -169,7 +169,7 @@ const Chats = () => {
     }
   };
 
-  // 🟢 SEND MESSAGE
+  // SEND MESSAGE
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!input.trim() || loadingChat) return;
@@ -338,7 +338,7 @@ const Chats = () => {
             <input
               type="text"
               autoFocus
-              placeholder="Ask MedAssist AI..."
+              placeholder="Ask MediAssist AI..."
               className="w-full pl-10 pr-14 md:pr-16 py-2 md:py-5 bg-gray-50 border border-gray-200 rounded-2xl md:rounded-3xl focus:ring-4 focus:ring-green-100 focus:border-green-400 focus:bg-white outline-none transition-all placeholder:text-gray-400 font-medium text-gray-800 shadow-sm text-sm md:text-base"
               value={input}
               onChange={(e) => setInput(e.target.value)}

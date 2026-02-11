@@ -20,7 +20,7 @@ function Navbar({ onToggleSidebar }: NavbarProps) {
               <IoMedicalOutline size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-gray-800 tracking-tight">MedAssist Pro</h2>
+              <h2 className="text-xl font-black text-gray-800 tracking-tight">MediAssist Pro</h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Diagnosis</span>
