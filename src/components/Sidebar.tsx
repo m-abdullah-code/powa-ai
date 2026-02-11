@@ -115,7 +115,12 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 </div>
 
                 {/* History List */}
-                <div className="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto px-3 space-y-1
+                [&::-webkit-scrollbar]:w-1.5
+                [&::-webkit-scrollbar-track]:bg-gray-100
+                [&::-webkit-scrollbar-thumb]:bg-gray-300
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                ">
                     <h3 className="px-4 py-2 text-base font-semibold text-black-600 capitalize">Your Chats</h3>
                     {loadingHistory ? (
                         <div className="space-y-3 p-4">
@@ -128,9 +133,9 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                             <button
                                 key={item.sessionId}
                                 onClick={() => handleSessionClick(item.sessionId)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left border text-sm ${currentSessionId === item.sessionId
+                                className={`w-full flex items-center gap-3 px-4 py-3 transition-all text-left border-gray-200 border-b text-sm m-0 ${currentSessionId === item.sessionId
                                     ? "bg-green-600 text-white border-green-500 shadow-md shadow-green-100"
-                                    : "hover:bg-green-50 text-gray-800 border-transparent"
+                                    : "hover:bg-green-50 text-gray-800"
                                     }`}
                             >
                                 <IoChatbubbleOutline className={currentSessionId === item.sessionId ? "text-white" : "text-gray-800"} size={18} />
