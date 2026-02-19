@@ -148,7 +148,7 @@ function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 {/* Profile Section */}
                 <div className="p-4 border-t border-gray-100 relative" ref={dropdownRef}>
                     {isProfileOpen && (
-                        <div className="absolute bottom-full left-4 right-4 bg-white border border-gray-200 rounded-xl shadow-xl z-[60] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="absolute bottom-full left-4 right-4 bg-white border border-gray-200 rounded-xl shadow-xl z-60 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                             <div className="p-4 border-b border-gray-50">
                                 <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Signed in as</p>
                                 <p className="text-sm font-semibold text-gray-800 truncate">{user?.email}</p>

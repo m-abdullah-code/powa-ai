@@ -118,14 +118,22 @@ const Chats = () => {
     }
   };
 
-  // Check if upload should be enabled
+  // Check if upload should be enabled or referral is ready
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
+
+      // Enable/Disable upload
       if (lastMessage.role === "assistant" && lastMessage.content.includes("Please upload the patient's medical history")) {
         setIsUploadEnabled(true);
       } else {
         setIsUploadEnabled(false);
+      }
+
+      // Show referral button if token present or prompt text present
+      const promptText = "Referral letter is ready. You can now generate the document.";
+      if (lastMessage.role === "assistant" && (lastMessage.content.includes("[[REFERRAL_READY]]") || lastMessage.content.includes(promptText))) {
+        setShowReferralButton(true);
       }
     } else {
       setIsUploadEnabled(false);
@@ -154,8 +162,6 @@ const Chats = () => {
 
       // Show referral button immediately after upload
       setShowReferralButton(true);
-
-      // setInput("File uploaded successfully.");
 
       // Reset file input
       e.target.value = "";
@@ -247,6 +253,11 @@ const Chats = () => {
               const { intro, specialists, outro } = msg.role === "assistant" ? parseSpecialists(msg.content) : { intro: msg.content, specialists: [], outro: "" };
               const hasSpecialists = specialists.length > 0;
 
+              const processedContent = msg.content.replace("[[REFERRAL_READY]]", "").replace("PDF", "Word").trim();
+
+              // Don't show empty assistant bubbles (e.g. if message was just the token)
+              if (msg.role === "assistant" && !processedContent && !hasSpecialists) return null;
+
               return (
                 <div
                   key={msg.id}
@@ -272,7 +283,7 @@ const Chats = () => {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <p className="font-medium whitespace-pre-wrap">{msg.content.replace("[[REFERRAL_READY]]", "").replace("PDF", "Word").trim()}</p>
+                        <p className="font-medium whitespace-pre-wrap">{processedContent}</p>
                       </div>
                     )}
                     <div className={`mt-2 text-[10px] font-bold uppercase tracking-widest opacity-80 ${msg.role === "user" ? "text-right" : ""}`}>
