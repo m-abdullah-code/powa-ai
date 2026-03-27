@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { ChatMessage } from '../../interface/chats';
+import type { ChatMessage } from '../../interface/chats.ts';
 
 interface HistoryItem {
     sessionId: string;
@@ -10,14 +10,20 @@ interface ChatState {
     history: HistoryItem[];
     allSessions: { [sessionId: string]: ChatMessage[] };
     currentSessionId: string;
+    activeEngagementId: string | null;
     loadingHistory: boolean;
+    refreshClientsTrigger: number;
+    isHistoryMode: boolean;
 }
 
 const initialState: ChatState = {
     history: [],
     allSessions: {},
     currentSessionId: "",
+    activeEngagementId: null,
     loadingHistory: false,
+    refreshClientsTrigger: 0,
+    isHistoryMode: false,
 };
 
 const chatSlice = createSlice({
@@ -33,8 +39,14 @@ const chatSlice = createSlice({
         setCurrentSessionId: (state, action: PayloadAction<string>) => {
             state.currentSessionId = action.payload;
         },
+        setActiveEngagementId: (state, action: PayloadAction<string | null>) => {
+            state.activeEngagementId = action.payload;
+        },
         setLoadingHistory: (state, action: PayloadAction<boolean>) => {
             state.loadingHistory = action.payload;
+        },
+        triggerRefreshClients: (state) => {
+            state.refreshClientsTrigger += 1;
         },
         addMessage: (state, action: PayloadAction<{ sessionId: string, message: ChatMessage }>) => {
             const { sessionId, message } = action.payload;
@@ -50,6 +62,9 @@ const chatSlice = createSlice({
             } else {
                 state.history.unshift(action.payload);
             }
+        },
+        setIsHistoryMode: (state, action: PayloadAction<boolean>) => {
+            state.isHistoryMode = action.payload;
         }
     },
 });
@@ -58,9 +73,12 @@ export const {
     setHistory, 
     setAllSessions, 
     setCurrentSessionId, 
+    setActiveEngagementId,
     setLoadingHistory, 
+    triggerRefreshClients,
     addMessage, 
-    updateOrAddHistory 
+    updateOrAddHistory,
+    setIsHistoryMode
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

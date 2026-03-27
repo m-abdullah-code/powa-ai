@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MdEmail } from 'react-icons/md';
-import { RiLockPasswordFill } from 'react-icons/ri';
-import { IoEye, IoEyeOff } from 'react-icons/io5';
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { login } from '../../api/auth';
+import type { SignInData } from '../../interface/auth/auth';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/slices/authSlice';
 
 function Login() {
-  const [data, setData] = useState({
+  const [data, setData] = useState<SignInData>({
     email: '',
     password: ''
   });
@@ -29,9 +28,8 @@ function Login() {
     try {
       const response = await login(data);
 
-      // The response body provided: { access_token, token_type, user }
       if (response.data.access_token) {
-        toast.success('Login successful!');
+        toast.success('Welcome back!');
 
         localStorage.setItem('access_token', response.data.access_token);
 
@@ -40,7 +38,7 @@ function Login() {
           dispatch(loginSuccess({ user: response.data.user, token: response.data.access_token }));
         }
 
-        navigate('/chat');
+        navigate('/dashboard');
       } else {
         toast.error('Login failed');
       }
@@ -52,25 +50,39 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-50 to-indigo-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-            <p className="text-gray-500">Sign in to your account</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-inter">
+      {/* Background blobs for modern look */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 bg-slate-50">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-200/40 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="w-full max-w-md">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200 mb-4">
+            <span className="text-white text-3xl font-bold">P</span>
+          </div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">POWA AI</h1>
+          <p className="text-slate-500 mt-2 font-medium">Elevate your audit workflow</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden p-8 sm:p-10">
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-slate-800">Sign In</h2>
+            <p className="text-sm text-slate-400 mt-1">Please enter your details to continue</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 ml-1">Email Address</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider ml-1">Email Address</label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
-                  <MdEmail size={18} />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                  <HiOutlineMail size={20} />
                 </div>
                 <input
                   type="email"
                   placeholder="name@example.com"
-                  className="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                  className="block w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-slate-700 placeholder:text-slate-400 font-medium"
                   value={data.email}
                   onChange={(e) => setData({ ...data, email: e.target.value })}
                   required
@@ -78,29 +90,28 @@ function Login() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-medium text-gray-700">Password</label>
-                {/* <Link to="#" className="text-xs text-green-600 hover:underline">Forgot Password?</Link> */}
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
               </div>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
-                  <RiLockPasswordFill size={18} />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                  <HiOutlineLockClosed size={20} />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
-                  className="block w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                  className="block w-full pl-12 pr-14 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-slate-700 placeholder:text-slate-400 font-medium"
                   value={data.password}
                   onChange={(e) => setData({ ...data, password: e.target.value })}
                   required
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                  {showPassword ? <HiOutlineEyeOff size={22} /> : <HiOutlineEye size={22} />}
                 </button>
               </div>
             </div>
@@ -108,20 +119,28 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold cursor-pointer rounded-xl shadow-lg transform transition-all active:scale-[0.98] ${loading ? 'opacity-70 cursor-not-allowed' : ''
+              className={`w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer ${loading ? 'opacity-80 cursor-not-allowed' : ''
                 }`}
             >
-              {loading ? 'Signing In...' : 'Login'}
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <span>Sign In</span>
+              )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-green-600 font-semibold hover:underline">
-              Register Now
+          <div className="mt-8 pt-8 border-t border-slate-100 text-center text-sm font-medium">
+            <span className="text-slate-400">New around here?</span>{' '}
+            <Link to="/register" className="text-indigo-600 font-bold hover:text-indigo-700 hover:underline transition-all">
+              Create an account
             </Link>
-          </p>
+          </div>
         </div>
+        
       </div>
     </div>
   );
