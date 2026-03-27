@@ -13,7 +13,8 @@ import Login from './pages/Auth/Login'
 import Layout from './layout/Layout'
 
 // import pages
-import Chats from './pages/Chats'
+import Dashboard from './pages/Dashboard'
+import Chat from './pages/Chat'
 import { Toaster } from 'react-hot-toast'
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Default Route: Agar user "/" par aaye */}
-          <Route path="/" element={<Navigate to="/chat" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Public Routes: Only non-logged-in users can access these pages */}
           <Route element={<PublicRoute />}>
@@ -35,7 +36,8 @@ function App() {
           <Route element={<PrivateRoute />}>
             {/* Layout wrap karega in sab routes ko */}
             <Route element={<Layout><Outlet /></Layout>}>
-              <Route path="/chat" element={<Chats />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chat" element={<Chat />} />
             </Route>
           </Route>
 

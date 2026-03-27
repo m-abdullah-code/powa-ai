@@ -3,7 +3,7 @@ import { isAuthenticated } from "../utils/auth";
 
 const PublicRoute = () => {
     // user loggedIn then redirect in dashboard page
-    return isAuthenticated() ? <Navigate to="/chat" replace /> : <Outlet />;
+    return isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 
 export default PublicRoute;

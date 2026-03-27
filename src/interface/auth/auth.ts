@@ -7,7 +7,6 @@ export interface AuthResponse {
 }
 
 export interface RegisterData {
-    username: string;
     email: string;
     password: string;
 }
@@ -16,7 +15,6 @@ export interface SignInData {
     id?: string;
     email: string;
     password: string;
-    username?: string;
 }
 
 export interface User {
