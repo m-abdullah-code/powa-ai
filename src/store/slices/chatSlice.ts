@@ -11,6 +11,7 @@ interface ChatState {
     allSessions: { [sessionId: string]: ChatMessage[] };
     currentSessionId: string;
     activeEngagementId: string | null;
+    activeClientName: string | null;
     loadingHistory: boolean;
     refreshClientsTrigger: number;
     isHistoryMode: boolean;
@@ -21,6 +22,7 @@ const initialState: ChatState = {
     allSessions: {},
     currentSessionId: "",
     activeEngagementId: null,
+    activeClientName: null,
     loadingHistory: false,
     refreshClientsTrigger: 0,
     isHistoryMode: false,
@@ -41,6 +43,9 @@ const chatSlice = createSlice({
         },
         setActiveEngagementId: (state, action: PayloadAction<string | null>) => {
             state.activeEngagementId = action.payload;
+        },
+        setActiveClientName: (state, action: PayloadAction<string | null>) => {
+            state.activeClientName = action.payload;
         },
         setLoadingHistory: (state, action: PayloadAction<boolean>) => {
             state.loadingHistory = action.payload;
@@ -74,6 +79,7 @@ export const {
     setAllSessions, 
     setCurrentSessionId, 
     setActiveEngagementId,
+    setActiveClientName,
     setLoadingHistory, 
     triggerRefreshClients,
     addMessage, 

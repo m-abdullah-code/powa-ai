@@ -6,7 +6,9 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import toast from 'react-hot-toast';
 import ClientModals from '../components/ClientModals';
-import { HiOutlinePlus } from 'react-icons/hi';
+import UploadDocumentsModal from '../components/UploadDocumentsModal';
+import GlobalDocumentsModal from '../components/GlobalDocumentsModal';
+import { HiOutlinePlus, HiOutlineOfficeBuilding, HiOutlineFolderOpen } from 'react-icons/hi';
 import { FiMessageSquare, FiSend, FiInbox, FiDownload } from 'react-icons/fi';
 
 const WorkpaperContent = ({ text }: { text: string }) => {
@@ -160,9 +162,13 @@ const renderBoldText = (text: string) => {
 
 function Dashboard() {
   const activeEngagementId = useSelector((state: RootState) => state.chat.activeEngagementId);
+  const activeClientName = useSelector((state: RootState) => state.chat.activeClientName);
   const isHistoryMode = useSelector((state: RootState) => state.chat.isHistoryMode);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isGlobalUpload, setIsGlobalUpload] = useState(false);
+  const [isGlobalDocsModalOpen, setIsGlobalDocsModalOpen] = useState(false);
 
   // Chat states
   const [chatInput, setChatInput] = useState('');
@@ -263,24 +269,62 @@ function Dashboard() {
   };
 
   return (
-    <div className="p-6 pb-0 flex flex-col h-full max-h-screen bg-slate-50/50">
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Audit Dashboard</h1>
-          <p className="text-sm text-slate-500 font-medium">Manage and analyze your client workpapers</p>
+    <div className="p-4 sm:p-6 pb-0 flex flex-col h-full max-h-screen bg-slate-50/50">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 shrink-0">
+        <div className="w-full lg:w-auto">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Audit Dashboard</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Manage and analyze your client workpapers</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] cursor-pointer flex items-center space-x-2"
-        >
-          <HiOutlinePlus className="w-5 h-5" />
-          <span>New Client</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="h-10 sm:h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 sm:px-6 rounded-xl sm:rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] cursor-pointer flex items-center space-x-2 text-sm sm:text-base whitespace-nowrap"
+          >
+            <HiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>New Client</span>
+          </button>
+          
+          <div className="flex items-center h-10 sm:h-12 bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-0.5 sm:p-1 gap-0.5 sm:gap-1">
+            <button
+              onClick={() => {
+                setIsGlobalUpload(true);
+                setIsUploadModalOpen(true);
+              }}
+              className="h-full px-2 sm:px-4 hover:bg-indigo-50 text-indigo-600 font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-sm whitespace-nowrap"
+              title="Upload Global Documents"
+            >
+              <HiOutlinePlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Upload Global</span>
+            </button>
+            <div className="w-px h-5 sm:h-6 bg-slate-100 mx-0.5"></div>
+            <button
+              onClick={() => setIsGlobalDocsModalOpen(true)}
+              className="h-full px-2 sm:px-4 hover:bg-indigo-50 text-indigo-600 font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 sm:space-x-2 text-[10px] sm:text-sm whitespace-nowrap"
+              title="View Global Documents"
+            >
+              <HiOutlineFolderOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">View Global</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Main Content Area */}
       {activeEngagementId ? (
-          <div className="flex-1 flex flex-col bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden min-h-0 mb-6 max-h-[calc(100vh-150px)]">
+          <div className="flex-1 flex flex-col bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden min-h-0 max-h-[calc(100vh-150px)] animate-in zoom-in-95 duration-200">
+              {/* Chat Header */}
+              <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
+                  <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                          <HiOutlineOfficeBuilding className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div>
+                          <h3 className="text-sm font-bold text-slate-900">{activeClientName || 'Audit Session'}</h3>
+                          <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Active Audit Room</p>
+                      </div>
+                  </div>
+              </div>
+
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/20 custom-scrollbar">
                   {chatMessages.length === 0 ? (
@@ -319,14 +363,27 @@ function Dashboard() {
               {/* Chat Input */}
               <div className="p-6 bg-white border-t border-slate-50 shrink-0">
                   <form onSubmit={handleChatSubmit} className="flex space-x-4 w-full relative">
-                      <input 
-                          type="text" 
-                          value={chatInput} 
-                          onChange={(e) => setChatInput(e.target.value)} 
-                          placeholder="Ask a question about the workpapers..." 
-                          className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm font-semibold text-slate-700 placeholder:text-slate-400"
-                          disabled={isChatLoading}
-                      />
+                      <div className="relative flex-1">
+                          <button
+                              type="button"
+                              onClick={() => {
+                                setIsGlobalUpload(false);
+                                setIsUploadModalOpen(true);
+                              }}
+                              className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center hover:bg-indigo-100 transition-colors cursor-pointer z-10"
+                              title="Upload Document"
+                          >
+                            <HiOutlinePlus className="w-5 h-5" />
+                          </button>
+                          <input 
+                              type="text" 
+                              value={chatInput} 
+                              onChange={(e) => setChatInput(e.target.value)} 
+                              placeholder="Ask a question about the workpapers..." 
+                              className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-14 pr-6 py-4 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm font-semibold text-slate-700 placeholder:text-slate-400"
+                              disabled={isChatLoading}
+                          />
+                      </div>
                       <button 
                           type="submit" 
                           disabled={!chatInput.trim() || isChatLoading}
@@ -351,7 +408,19 @@ function Dashboard() {
 
       {/* Modals Component */}
       <ClientModals isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
-
+      
+      {/* Upload Documents Modal (Direct Trigger) */}
+      <UploadDocumentsModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          engagementId={activeEngagementId}
+          clientName={activeClientName}
+          isGlobal={isGlobalUpload}
+      />
+      <GlobalDocumentsModal
+          isOpen={isGlobalDocsModalOpen}
+          onClose={() => setIsGlobalDocsModalOpen(false)}
+      />
     </div>
   );
 }

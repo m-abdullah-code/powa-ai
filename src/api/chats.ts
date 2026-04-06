@@ -35,3 +35,26 @@ export const getWorkpapersChatDetail = async (workpaper_id: string) => {
     return await api.get(`/api/v1/audit/workpapers/${workpaper_id}/detail`);
 };
 
+// delete client
+export const deleteClient = async (engagement_id: string) => {
+    return await api.delete(`/api/v1/audit/engagements/${engagement_id}`);
+};
+
+// Global upload documents
+export const globalUploadDocuments = async (data: any) => {
+    return await api.post(`/api/v1/admin/standards/upload`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+};
+
+// get all global documents
+export const getGlobalDocuments = async () => {
+    return await api.get(`/api/v1/admin/standards/list`);
+};
+
+// delete global document
+export const deleteGlobalDocument = async () => {
+    return await api.delete(`/api/v1/admin/standards/clear`);
+};
