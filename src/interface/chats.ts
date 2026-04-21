@@ -13,4 +13,5 @@ export interface ChatMessage {
     text: string;
     isUser: boolean;
     timestamp?: string;
+    is_structured_audit_output?: boolean;
 }

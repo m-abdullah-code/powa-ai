@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { jsPDF } from 'jspdf';
+import { marked } from 'marked';
 import { workpapersChat, getWorkpapersChat } from '../api/chats';
 import type { ChatMessage } from '../interface/chats';
 import { useSelector } from 'react-redux';
@@ -11,69 +12,238 @@ import GlobalDocumentsModal from '../components/GlobalDocumentsModal';
 import { HiOutlinePlus, HiOutlineOfficeBuilding, HiOutlineFolderOpen } from 'react-icons/hi';
 import { FiMessageSquare, FiSend, FiInbox, FiDownload } from 'react-icons/fi';
 
-const WorkpaperContent = ({ text }: { text: string }) => {
+const WorkpaperContent = ({ text, isStructured }: { text: string; isStructured?: boolean }) => {
   const lines = text.split('\n');
   
-  const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    const firstLine = lines[0]?.trim() || 'Workpaper-Report';
-    const fileName = `${firstLine.replace(/[|\\/:*?"<>]/g, '_')}.pdf`;
+const handleDownloadPDF = () => {
+  // ── Sanitize text to fix jsPDF special-char escaping bug ──────────
+  // jsPDF adds a stray `/` before characters like %, (, ), . when they
+  // appear after certain tokens. Normalize the string first.
+  const sanitize = (raw: string): string =>
+    raw
+      .replace(/\*\*/g, '')                     // strip markdown bold
+      .replace(/[\u2010-\u2015\u2212]/g, '-')   // all dash variants → hyphen-minus
+      .replace(/\u2019|\u2018/g, "'")            // curly quotes → straight
+      .replace(/\u201C|\u201D/g, '"')            // curly double quotes → straight
+      .replace(/\u2026/g, '...')                 // ellipsis char
+      .replace(/\u00A0/g, ' ')                   // non-breaking space
+      .replace(/[^\x00-\x7F]/g, (c) => {        // any remaining non-ASCII
+        // keep common latin extended; strip everything else
+        return c.charCodeAt(0) < 256 ? c : '';
+      });
 
-    let y = 20;
-    const margin = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const maxWidth = pageWidth - (margin * 2);
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageW  = doc.internal.pageSize.getWidth();   // 595.28
+  const pageH  = doc.internal.pageSize.getHeight();  // 841.89
+  const marginL = 52;
+  const marginR = 52;
+  // Use a conservative content width — jsPDF glyph-width estimation
+  // is imprecise; the 18pt safety margin prevents mid-word truncation.
+  const contentW = pageW - marginL - marginR - 18;   // ~473 pt
+  let y = 0;
+  let pageNum = 1;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Audit Workpaper Report", margin, y);
-    y += 15;
-
-    lines.forEach((line) => {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) {
-        y += 5;
-        return;
-      }
-
-      const headers = [
-        'Objective', 'Criteria', 'Procedures Performed', 
-        'Evidence Obtained', 'Results and Findings', 
-        'Overall Assessment', 'Conclusion', 'Follow-Up Items'
-      ];
-      
-      const isHeader = headers.some(h => trimmedLine.startsWith(h) && trimmedLine.length < h.length + 5);
-      const isMainHeader = trimmedLine.startsWith('WORKPAPER:');
-      
-      if (isMainHeader) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.setTextColor(79, 70, 229); // indigo-600
-      } else if (isHeader) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        doc.setTextColor(15, 23, 42); // slate-900
-      } else {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(71, 85, 105); // slate-600
-      }
-
-      const splitText = doc.splitTextToSize(line, maxWidth);
-      
-      // Check if we need a new page
-      if (y + (splitText.length * 7) > 280) {
-        doc.addPage();
-        y = 20;
-      }
-
-      doc.text(splitText, margin, y);
-      y += (splitText.length * 7);
-    });
-
-    doc.save(fileName);
-    toast.success('Report downloaded as PDF');
+  const COLORS = {
+    navy:       [45, 58, 140]   as [number, number, number],
+    navyLight:  [240, 243, 255] as [number, number, number],
+    navyBorder: [212, 217, 245] as [number, number, number],
+    text:       [26, 26, 46]    as [number, number, number],
+    textMid:    [55, 55, 75]    as [number, number, number],
+    textLight:  [140, 140, 155] as [number, number, number],
+    ruleLine:   [220, 225, 245] as [number, number, number],
   };
+
+  const SECTION_HEADERS = [
+    'Objective', 'Criteria', 'Procedures Performed',
+    'Evidence Obtained', 'Results and Findings',
+    'Overall Assessment', 'Conclusion', 'Follow-Up Items',
+  ];
+
+  const LINE_H = 14;   // body line height in pt
+
+  const addFooter = () => {
+    doc.setDrawColor(...COLORS.ruleLine);
+    doc.setLineWidth(0.5);
+    doc.line(marginL, pageH - 38, pageW - marginR, pageH - 38);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...COLORS.textLight);
+    doc.text('Confidential - For Audit Use Only', marginL, pageH - 24);
+    doc.text(`Page ${pageNum}`, pageW - marginR, pageH - 24, { align: 'right' });
+  };
+
+  const ensurePage = (neededH: number) => {
+    if (y + neededH > pageH - 56) {
+      addFooter();
+      doc.addPage();
+      pageNum++;
+      y = 52;
+    }
+  };
+
+  // ── Page 1 Header ────────────────────────────────────────────────
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(0, 0, pageW, 7, 'F');
+
+  y = 38;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(19);
+
+  y += 16;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(19);
+  doc.setTextColor(...COLORS.text);
+  doc.text('Audit Workpaper Report', marginL, y);
+
+  const firstLine = sanitize(lines[0]?.trim() || '');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...COLORS.textLight);
+  if (firstLine) doc.text(firstLine, pageW - marginR, y - 12, { align: 'right' });
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+  doc.text(`Generated ${dateStr}`, pageW - marginR, y + 5, { align: 'right' });
+
+  y += 16;
+  doc.setDrawColor(...COLORS.navy);
+  doc.setLineWidth(1.5);
+  doc.line(marginL, y, pageW - marginR, y);
+  y += 22;
+
+  // ── Body parsing ─────────────────────────────────────────────────
+  const bodyLines = firstLine && lines[0]?.trim().includes('|') ? lines.slice(1) : lines;
+  let inConclusion = false;
+  const conclusionBuf: string[] = [];
+
+  const flushConclusion = () => {
+    if (!conclusionBuf.length) return;
+    const txt = sanitize(conclusionBuf.join(' ').trim());
+    const wrapped = doc.splitTextToSize(txt, contentW - 36);
+    const blockH = wrapped.length * LINE_H + 38;
+    ensurePage(blockH);
+
+    doc.setFillColor(...COLORS.navyLight);
+    doc.setDrawColor(...COLORS.navyBorder);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(marginL, y, contentW + 18, blockH, 4, 4, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...COLORS.navy);
+    doc.setCharSpace(1.5);
+    doc.text('CONCLUSION', marginL + 16, y + 17);
+    doc.setCharSpace(0);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...COLORS.textMid);
+    doc.text(wrapped, marginL + 16, y + 31);
+
+    y += blockH + 18;
+    conclusionBuf.length = 0;
+    inConclusion = false;
+  };
+
+  for (const rawLine of bodyLines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) { y += 6; continue; }
+    const clean = sanitize(trimmed);
+
+    // WORKPAPER: banner
+    if (clean.startsWith('WORKPAPER:')) {
+      flushConclusion();
+      const wrapped = doc.splitTextToSize(clean, contentW - 28);
+      const bannerH = wrapped.length * LINE_H + 22;
+      ensurePage(bannerH);
+
+      doc.setFillColor(...COLORS.navyLight);
+      doc.rect(marginL, y, contentW + 18, bannerH, 'F');
+      doc.setFillColor(...COLORS.navy);
+      doc.rect(marginL, y, 5, bannerH, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(...COLORS.navy);
+      doc.text(wrapped, marginL + 16, y + 15);
+      y += bannerH + 18;
+      continue;
+    }
+
+    // Section headers
+    const matchedHeader = SECTION_HEADERS.find(
+      (h) => clean.startsWith(h) && clean.length < h.length + 5
+    );
+    if (matchedHeader) {
+      flushConclusion();
+      inConclusion = matchedHeader === 'Conclusion';
+      if (inConclusion) continue;
+
+      ensurePage(30);
+      y += 8;
+      doc.setDrawColor(...COLORS.ruleLine);
+      doc.setLineWidth(0.5);
+      doc.line(marginL, y, pageW - marginR, y);
+      y += 12;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...COLORS.navy);
+      doc.setCharSpace(1.4);
+      doc.text(clean.toUpperCase(), marginL, y);
+      doc.setCharSpace(0);
+      y += 14;
+      continue;
+    }
+
+    if (inConclusion) { conclusionBuf.push(clean); continue; }
+
+    // Numbered list: "1. text" or bullet "- text"  
+    const numMatch  = clean.match(/^(\d+)\.\s+([\s\S]*)/);
+    const dashMatch = clean.match(/^[-•]\s+([\s\S]*)/);
+
+    if (numMatch || dashMatch) {
+      const bullet   = numMatch ? `${numMatch[1]}.` : '-';
+      const itemText = numMatch ? numMatch[2] : dashMatch![1];
+      // Use narrower width for list items (bullet takes ~24pt)
+      const wrapped  = doc.splitTextToSize(itemText, contentW - 24);
+      const itemH    = wrapped.length * LINE_H + 4;
+      ensurePage(itemH);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...COLORS.navy);
+      doc.text(bullet, marginL + 4, y);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...COLORS.textMid);
+      doc.text(wrapped, marginL + 24, y);
+      y += itemH + 3;
+      continue;
+    }
+
+    // Regular paragraph
+    const wrapped = doc.splitTextToSize(clean, contentW);
+    const textH   = wrapped.length * LINE_H;
+    ensurePage(textH);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...COLORS.textMid);
+    doc.text(wrapped, marginL, y);
+    y += textH + 8;
+  }
+
+  flushConclusion();
+  addFooter();
+
+  const safeName = sanitize(lines[0]?.trim() || 'Workpaper-Report')
+    .replace(/[|\\/:*?"<>]/g, '_');
+  doc.save(`${safeName}.pdf`);
+  toast.success('Report downloaded as PDF');
+};
+
+  const tokens = marked.lexer(text);
 
   return (
     <div className="space-y-4 relative group/content">
@@ -137,15 +307,17 @@ const WorkpaperContent = ({ text }: { text: string }) => {
         );
       })}
       
-      <div className="pt-4 mt-6 border-t border-slate-100 flex justify-end">
-        <button 
-          onClick={handleDownloadPDF}
-          className="flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-xl transition-all cursor-pointer font-bold text-xs"
-        >
-          <FiDownload className="w-4 h-4" />
-          <span>Download Report (PDF)</span>
-        </button>
-      </div>
+      {isStructured && (
+        <div className="pt-4 mt-6 border-t border-slate-100 flex justify-end">
+          <button 
+            onClick={handleDownloadPDF}
+            className="flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-xl transition-all cursor-pointer font-bold text-xs"
+          >
+            <FiDownload className="w-4 h-4" />
+            <span>Download Report (PDF)</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -213,7 +385,8 @@ function Dashboard() {
                         {
                             text: msg.content || '...',
                             isUser: false,
-                            timestamp: msg.created_at
+                            timestamp: msg.created_at,
+                            is_structured_audit_output: msg.is_structured_audit_output
                         }
                     ])).flat();
                     
@@ -253,7 +426,11 @@ function Dashboard() {
             answerText = response.data.content;
         }
         
-        const aiMsg: ChatMessage = { text: answerText, isUser: false };
+        const aiMsg: ChatMessage = { 
+            text: answerText, 
+            isUser: false,
+            is_structured_audit_output: response.data?.is_structured_audit_output 
+        };
         setChatMessages(prev => [...prev, aiMsg]);
     } catch (error: any) {
         let errorMsg = 'Failed to send message';
@@ -342,7 +519,7 @@ function Dashboard() {
                                   {msg.isUser ? (
                                       <p className="whitespace-pre-wrap text-sm font-semibold leading-relaxed">{msg.text}</p>
                                   ) : (
-                                      <WorkpaperContent text={msg.text} />
+                                      <WorkpaperContent text={msg.text} isStructured={msg.is_structured_audit_output} />
                                   )}
                               </div>
                           </div>
