@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { jsPDF } from 'jspdf';
-import { marked } from 'marked';
 import { workpapersChat, getWorkpapersChat } from '../api/chats';
 import type { ChatMessage } from '../interface/chats';
 import { useSelector } from 'react-redux';
@@ -243,7 +242,6 @@ const handleDownloadPDF = () => {
   toast.success('Report downloaded as PDF');
 };
 
-  const tokens = marked.lexer(text);
 
   return (
     <div className="space-y-4 relative group/content">
